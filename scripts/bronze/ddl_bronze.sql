@@ -24,7 +24,7 @@ cst_firstname NVARCHAR(50),
 cst_lastname NVARCHAR(50),
 cst_marital_status NVARCHAR(50),
 cst_gnder NVARCHAR(50),
-cst_cerate_date DATE
+cst_create_date DATE
 );
 
 IF OBJECT_ID ('bronze.crm_prd_info', 'U') IS NOT NULL
