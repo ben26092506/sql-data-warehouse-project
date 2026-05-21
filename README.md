@@ -7,9 +7,6 @@ The goal is to consolidate sales-related data from multiple source systems, clea
 
 The project follows a layered data architecture based on the **Medallion Architecture** with Bronze, Silver, and Gold layers. It covers the full data engineering workflow from raw data ingestion to analytical data modeling.
 
-The datasets used in this project are based on the tutorial datasets provided by Data With Baraa:  
-https://github.com/DataWithBaraa/sql-data-warehouse-project/tree/main/datasets
-
 ---
 
 ## Project Objectives
