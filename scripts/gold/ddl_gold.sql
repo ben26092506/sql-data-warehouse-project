@@ -1,3 +1,32 @@
+/*
+===========================================================
+View Script: Create Gold Layer Views
+===========================================================
+Script Purpose:
+  This script creates the Gold layer views for the DataWarehouse project.
+  The Gold layer provides business-ready data models for reporting, analytics,
+  and downstream consumption.
+
+  The script creates customer and product dimension views as well as a sales
+  fact view. These views combine and enrich cleaned Silver layer data from CRM
+  and ERP sources into a structured analytical model.
+
+  The dimension views provide descriptive business entities such as customers
+  and products, while the fact view stores transactional sales data linked to
+  the corresponding customer and product dimensions.
+
+Views Created:
+  - gold.dim_customers
+  - gold.dim_products
+  - gold.fact_sales
+
+Usage Notes:
+  These views are intended for analytical queries, reporting, and dashboarding.
+  They do not physically store data, but always reflect the current data from
+  the underlying Silver layer tables.
+*/
+
+-- gold.dim_customers
 CREATE VIEW gold.dim_customers AS
 SELECT
 	ROW_NUMBER() OVER (ORDER BY ci.cst_id) AS customer_key,
@@ -18,3 +47,42 @@ LEFT JOIN silver.erp_cust_az12 ca
 	ON ci.cst_key = ca.cid
 LEFT JOIN silver.erp_loc_a101 la
 	ON ci.cst_key = la.cid
+
+
+-- gold.dim_products
+CREATE VIEW gold.dim_products AS
+SELECT
+	ROW_NUMBER() OVER (ORDER BY p.prd_start_dt, p.prd_key) AS product_key,
+	p.prd_id AS product_id,
+	p.prd_key AS product_number,
+	p.prd_nm AS product_name,
+	p.cat_id AS category_id,
+	c.cat AS category,
+	c.subcat AS subcategory,
+	c.maintenance AS maintenance,
+	p.prd_cost AS cost,
+	p.prd_line AS product_line,
+	p.prd_start_dt AS start_date
+FROM silver.crm_prd_info p
+LEFT JOIN silver.erp_px_cat_g1v2 c
+	ON p.cat_id = c.id
+WHERE prd_end_dt IS NULL;
+
+
+-- gold.fact_sales
+CREATE VIEW gold.fact_sales AS
+SELECT
+	s.sls_ord_num AS order_number,
+	p.product_key,
+	c.customer_key,
+	s.sls_order_dt AS order_date,
+	s.sls_ship_dt AS shipping_date,
+	s.sls_due_dt AS due_date,
+	s.sls_sales AS sales_amount,
+	s.sls_quantity AS quantity,
+	s.sls_price AS price
+FROM silver.crm_sales_details s
+LEFT JOIN gold.dim_products p
+	ON s.sls_prd_key = p.product_number
+LEFT JOIN gold.dim_customers c
+	ON s.sls_cust_id = c.customer_id
